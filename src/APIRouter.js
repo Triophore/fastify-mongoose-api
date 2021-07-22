@@ -30,7 +30,11 @@ class APIRouter {
 	setUpRoutes() {
 		let path = this._path;
 		this._fastify.get(path, {}, this.routeHandler('routeList'));
-		this._fastify.post(path, {}, this.routeHandler('routePost'));
+		this._fastify.post(path, {
+			schema: {
+				body: this._model.jsonSchema()
+			}
+		}, this.routeHandler('routePost'));
 		this._fastify.get(path+'/:id', {
 			schema: {
 				params: {
@@ -67,7 +71,20 @@ class APIRouter {
 			this._apiSubRoutesFunctions = this._model['apiSubRoutes']();
 
 			for (let key of Object.keys(this._apiSubRoutesFunctions)) {
-				this._fastify.get(path+'/:id/'+key, {}, this.routeHandler('routeSub', key));
+				this._fastify.get(path+'/:id/'+key, {
+					schema: {
+						params: {
+						  type: 'object',
+						  properties: {
+							id: {
+							  type: 'string',
+							  description: 'identifier, as Id'
+							}
+						  },
+						  required: ['id']
+						}
+					}
+				}, this.routeHandler('routeSub', key));
 			}
 		}
 
